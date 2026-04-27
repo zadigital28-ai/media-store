@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zadigital - Solusi Digital Terpercaya</title>
+    <!-- MENGGUNAKAN TAILWIND CSS & LUCIDE ICONS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        /* VARIABEL CSS UTAMA 
+           Nilai di sini adalah fallback, akan otomatis berubah mengikuti data Spreadsheet (Tab Branding)
+        */
+        :root {
+            --brand-primary: #0a1645;
+            --brand-accent: #0eeef7;
+            --brand-secondary: #126bdd;
+            --bg-color: #0a1645;
+            --surface-color: #0d1f5c;
+            --text-color: #f0f4ff;
+            --border-color: rgba(255,255,255,0.1);
+        }
+
+        /* Hapus scrollbar samping tapi tetap bisa di-scroll */
+        * { scrollbar-width: none; -ms-overflow-style: none; }
+        *::-webkit-scrollbar { display: none; }
+
+        body {
+            font-family: 'Plus+Jakarta+Sans', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .tech-grid {
+            background-image: linear-gradient(to right, var(--brand-accent) 1px, transparent 1px), linear-gradient(to bottom, var(--brand-accent) 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.05;
+            mask-image: radial-gradient(ellipse at center, black, transparent 80%);
+        }
+
+        .loader-wrapper {
+            position: fixed; inset: 0; z-index: 9999;
+            background: var(--brand-primary);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .service-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3); }
+
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .marquee-container { overflow: hidden; white-space: nowrap; position: relative; }
+        .marquee-content { display: inline-flex; animation: marquee 100s linear infinite; }
+        .marquee-container:hover .marquee-content { animation-play-state: paused; }
+
+        @keyframes logo-jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .logo-jump { animation: logo-jump 3s ease-in-out infinite; }
+    </style>
+</head>
+<body class="dark min-h-screen">
+
+    <!-- MODAL POPUP PROMO (Sekarang Menampilkan GAMBAR jika 'pop_up' di sheet diisi URL) -->
+    <div id="popup-promo" class="fixed inset-0 z-[100] hidden items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+        <div class="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-2xl p-4 max-w-md w-full relative shadow-2xl overflow-hidden">
+            <button onclick="closePopup()" class="absolute top-2 right-2 p-2 bg-black/50 text-white rounded-full z-10 hover:bg-black/70 transition-all"><i data-lucide="x" class="w-4 h-4"></i></button>
+            <div id="popup-content">
+                <!-- Gambar Promo akan dirender di sini -->
+                <img id="popup-image-display" src="" alt="Promo" class="w-full h-auto rounded-xl object-cover">
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="loader-wrapper">
+        <div class="w-12 h-12 border-2 border-white/20 border-t-[var(--brand-accent)] rounded-full animate-spin mb-4"></div>
+        <h1 id="loading-brand-name" class="text-white text-lg font-black tracking-widest animate-pulse uppercase">MEMUAT...</h1>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between bg-[var(--surface-color)]/80 backdrop-blur-lg rounded-2xl p-2.5 shadow-lg border border-white/5">
+            <div class="flex items-center gap-2 ml-2">
+                <img id="nav-logo" src="" alt="Logo" class="w-8 h-8 object-contain rounded-lg hidden">
+                <span id="nav-brand-name" class="text-lg font-black tracking-tighter italic uppercase">Zadigital</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleTheme()" class="p-2 rounded-xl bg-black/10 dark:bg-white/5 hover:scale-105 transition-transform">
+                    <i id="theme-icon" data-lucide="sun" class="w-5 h-5"></i>
+                </button>
+                <button onclick="toggleCart()" class="p-2 rounded-xl bg-[var(--brand-accent)]/20 hover:scale-105 transition-transform relative mr-2">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 text-[var(--brand-secondary)]"></i>
+                    <span id="cart-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="pt-40 pb-20 px-4 relative overflow-hidden flex flex-col items-center">
+        <div class="absolute inset-0 tech-grid -z-10"></div>
+        <div class="max-w-7xl mx-auto text-center relative flex flex-col items-center px-4">
+            <img id="hero-logo" src="" alt="Logo" class="w-20 h-20 mb-6 object-contain hidden logo-jump">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-[var(--brand-accent)] opacity-10 blur-[100px] -z-10 rounded-full"></div>
+            
+            <!-- Nama Brand / Judul Hero -->
+            <h1 id="hero-title" class="font-black mb-4 bg-gradient-to-r from-[var(--brand-secondary)] via-[var(--brand-accent)] to-[var(--brand-secondary)] bg-clip-text text-transparent italic tracking-tighter uppercase leading-tight w-full break-words"></h1>
+            
+            <p id="hero-subtitle" class="text-sm md:text-lg opacity-60 mb-10 max-w-2xl mx-auto font-medium"></p>
+            
+            <a href="#services-section" class="bg-[var(--brand-secondary)] text-white px-8 py-3.5 rounded-xl font-black shadow-xl shadow-[var(--brand-secondary)]/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 uppercase italic text-xs tracking-widest">
+                <i data-lucide="layout-list" class="w-4 h-4"></i> Daftar Layanan
+            </a>
+        </div>
+    </section>
+
+    <!-- INFO & CATATAN SECTION -->
+    <section id="info-section" class="py-12 px-4 hidden">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-2xl p-8 md:p-12 text-center">
+                <h2 id="info-title-display" class="text-2xl font-black mb-4 italic uppercase tracking-tight"></h2>
+                <p id="info-body-display" class="opacity-60 leading-relaxed font-medium mb-8"></p>
+                
+                <!-- BOX CATATAN (Muncul jika 'catatan' ada isinya) -->
+                <div id="catatan-box" class="hidden p-5 bg-yellow-500/5 border border-yellow-500/20 rounded-xl text-yellow-500/80 italic text-sm text-left flex gap-4">
+                    <i data-lucide="alert-circle" class="shrink-0 w-5 h-5"></i>
+                    <span id="catatan-text-display"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CARA ORDER SECTION (6 LANGKAH) -->
+    <section id="cara-order-section" class="py-20 px-4 bg-[var(--surface-color)] rounded-3xl mx-4 border border-[var(--border-color)]">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="text-[var(--brand-secondary)] font-black text-[10px] uppercase tracking-[0.4em]">Tutorial</span>
+                <h2 class="text-3xl font-black mt-2 italic uppercase">Cara Order</h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="p-6 bg-[var(--bg-color)] rounded-2xl border border-[var(--border-color)] relative flex flex-col items-center text-center">
+                    <div class="w-12 h-12 bg-[var(--brand-accent)]/10 rounded-xl flex items-center justify-center mb-4 text-[var(--brand-accent)]"><i data-lucide="search"></i></div>
+                    <span class="absolute top-4 right-6 text-2xl font-black opacity-10">01</span>
+                    <h4 class="font-black text-sm mb-2 uppercase tracking-wide">Cari Layanan</h4>
+                    <p class="text-xs opacity-50 leading-relaxed">Temukan platform yang ingin Anda optimasi.</p>
+                </div>
+                <div class="p-6 bg-[var(--bg-color)] rounded-2xl border border-[var(--border-color)] relative flex flex-col items-center text-center">
+                    <div class="w-12 h-12 bg-[var(--brand-accent)]/10 rounded-xl flex items-center justify-center mb-4 text-[var(--brand-accent)]"><i data-lucide="shopping-cart"></i></div>
+                    <span class="absolute top-4 right-6 text-2xl font-black opacity-10">02</span>
+                    <h4 class="font-black text-sm mb-2 uppercase tracking-wide">Pilih Jumlah</h4>
+                    <p class="text-xs opacity-50 leading-relaxed">Masukkan jumlah followers atau likes yang dibutuhkan.</p>
+                </div>
+                <div class="p-6 bg-[var(--bg-color)] rounded-2xl border border-[var(--border-color)] relative flex flex-col items-center text-center">
+                    <div class="w-12 h-12 bg-[var(--brand-accent)]/10 rounded-xl flex items-center justify-center mb-4 text-[var(--brand-accent)]"><i data-lucide="check-square"></i></div>
+                    <span class="absolute top-4 right-6 text-2xl font-black opacity-10">03</span>
+                    <h4 class="font-black text-sm mb-2 uppercase tracking-wide">Konfirmasi</h4>
+                    <p class="text-xs opacity-50 leading-relaxed">Periksa kembali detail pesanan Anda di keranjang.</p>
+                </div>
+                <div class="p-6 bg-[var(--bg-color)] rounded-2xl border border-[var(--border-color)] relative flex flex-col items-center text-center">
+                    <div class="w-12 h-12 bg-[var(--brand-accent)]/10 rounded-xl flex items-center justify-center mb-4 text-[var(--brand-accent)]"><i data-lucide="send"></i></div>
+                    <span class="absolute top-4 right-6 text-2xl font-black opacity-10">04</span>
+                    <h4 class="font-black text-sm mb-2 uppercase tracking-wide">Kirim Link</h4>
+                    <p class="text-xs opacity-50 leading-relaxed">Berikan link profil/konten kepada tim admin kami.</p>
+                </div>
+                <div class="p-6 bg-[var(--bg-color)] rounded-2xl border border-[var(--border-color)] relative flex flex-col items-center text-center">
+                    <div class="w-12 h-12 bg-[var(--brand-accent)]/10 rounded-xl flex items-center justify-center mb-4 text-[var(--brand-accent)]"><i data-lucide="zap"></i></div>
+                    <span class="absolute top-4 right-6 text-2xl font-black opacity-10">05</span>
+                    <h4 class="font-black text-sm mb-2 uppercase tracking-wide">Proses Kilat</h4>
+                    <p class="text-xs opacity-50 leading-relaxed">Pesanan Anda akan langsung diproses sistem kami.</p>
+                </div>
+                <div class="p-6 bg-pink-500/5 rounded-2xl border border-pink-500/10 relative flex flex-col items-center text-center">
+                    <div class="w-12 h-12 bg-pink-500/10 rounded-xl flex items-center justify-center mb-4 text-pink-500"><i data-lucide="gift"></i></div>
+                    <span class="absolute top-4 right-6 text-2xl font-black opacity-10">06</span>
+                    <h4 class="font-black text-sm mb-2 uppercase tracking-wide">Klaim Bonus</h4>
+                    <p class="text-xs opacity-50 leading-relaxed">Dapatkan bonus tambahan khusus untuk member.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICES SECTION -->
+    <section id="services-section" class="py-20 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col lg:flex-row gap-4 mb-10 sticky top-20 z-40 bg-[var(--bg-color)]/80 backdrop-blur-xl p-4 rounded-2xl border border-[var(--border-color)] shadow-xl">
+                <div class="flex-1 space-y-4">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 opacity-30"></i>
+                        <input type="text" id="search-input" oninput="handleFilter()" placeholder="Cari layanan..." class="w-full pl-10 pr-6 py-2.5 rounded-xl bg-[var(--surface-color)] border border-[var(--border-color)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-accent)] transition-all font-bold text-sm">
+                    </div>
+                    <div class="relative flex items-center group/nav">
+                        <button onclick="scrollFilters(-150)" class="absolute -left-2 z-10 p-2 bg-[var(--surface-color)] border border-[var(--border-color)] rounded-full shadow-lg opacity-0 group-hover/nav:opacity-100 transition-opacity"><i data-lucide="chevron-left" class="w-3 h-3"></i></button>
+                        <div id="platform-filters" class="flex overflow-x-auto gap-2 pb-2 hide-scrollbar scroll-smooth w-full"></div>
+                        <button onclick="scrollFilters(150)" class="absolute -right-2 z-10 p-2 bg-[var(--surface-color)] border border-[var(--border-color)] rounded-full shadow-lg opacity-0 group-hover/nav:opacity-100 transition-opacity"><i data-lucide="chevron-right" class="w-3 h-3"></i></button>
+                    </div>
+                </div>
+                <div class="lg:w-48">
+                    <select id="sort-select" onchange="handleFilter()" class="w-full p-2.5 rounded-xl bg-[var(--surface-color)] border border-[var(--border-color)] focus:outline-none font-black text-[10px] uppercase">
+                        <option value="default">Default</option>
+                        <option value="cheap">Termurah</option>
+                        <option value="expensive">Termahal</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="services-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="pagination" class="mt-16 flex justify-center gap-2"></div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS SECTION -->
+    <section class="py-20 overflow-hidden bg-[var(--surface-color)] border-y border-[var(--border-color)]">
+        <div class="max-w-7xl mx-auto px-4 mb-10 text-center uppercase italic">
+            <h2 class="text-2xl font-black tracking-tighter">Apa Kata Mereka?</h2>
+        </div>
+        <div class="marquee-container group">
+            <div id="testimonial-marquee" class="marquee-content gap-6 px-4"></div>
+        </div>
+    </section>
+
+    <!-- BONUS SECTION (Hanya tampil jika ada gambar di 'Bonus_1/2/3' di Sheet) -->
+    <section id="bonus-section" class="py-20 px-4 hidden">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-3xl font-black mb-12 italic uppercase text-[var(--brand-accent)]">Bonus Exclusive</h2>
+            <div id="bonus-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-[var(--surface-color)] pt-16 pb-8 px-6 border-t border-[var(--border-color)]">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid lg:grid-cols-3 gap-10 mb-10">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <img id="footer-logo" src="" alt="Logo" class="w-8 h-8 object-contain hidden">
+                        <span id="footer-brand-name" class="text-lg font-black tracking-tighter italic uppercase">Zadigital</span>
+                    </div>
+                    <!-- Teks Sosial Media di Footer -->
+                    <div id="footer-sosmed" class="flex flex-wrap gap-4"></div>
+                </div>
+                <div class="space-y-4">
+                    <h4 class="font-black uppercase tracking-widest text-[10px] opacity-40">Layanan</h4>
+                    <a id="footer-wa-link" href="#" target="_blank" class="flex items-center gap-3 p-3.5 bg-green-500/5 border border-green-500/10 rounded-xl hover:bg-green-500/10 transition-all">
+                        <div class="w-8 h-8 rounded-lg bg-green-500 flex items-center justify-center text-white"><i data-lucide="message-circle" class="w-4 h-4"></i></div>
+                        <div><span class="text-[8px] uppercase font-black opacity-30 block">WhatsApp Admin</span><span id="footer-wa" class="font-black text-sm"></span></div>
+                    </a>
+                </div>
+                <div class="space-y-2">
+                    <h4 class="font-black uppercase tracking-widest text-[10px] opacity-40">Copyright</h4>
+                    <p id="footer-text-display" class="text-[10px] opacity-40 font-medium"></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CART DRAWER -->
+    <div id="cart-drawer" class="fixed top-0 bottom-0 right-0 w-full md:w-[400px] bg-[var(--surface-color)] z-[70] translate-x-full shadow-2xl flex flex-col border-l border-white/5">
+        <div class="p-6 border-b border-white/5 flex items-center justify-between bg-[var(--brand-primary)] text-white">
+            <div class="flex items-center gap-3"><i data-lucide="shopping-bag" class="w-5 h-5 text-[var(--brand-accent)]"></i><h3 class="text-lg font-black italic uppercase">Keranjang</h3></div>
+            <button onclick="toggleCart()" class="p-2 hover:bg-white/10 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+        <div class="p-6 bg-[var(--bg-color)] border-t border-white/5 space-y-6">
+            <div class="flex justify-between items-center"><span class="opacity-40 font-black uppercase text-[10px]">Grand Total</span><span id="cart-total" class="text-2xl font-black text-[var(--brand-secondary)]">Rp 0</span></div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="clearCart()" class="py-3.5 rounded-xl border border-red-500/20 text-red-500 font-black text-[10px] uppercase italic transition-all hover:bg-red-500 hover:text-white">Kosongkan</button>
+                <button onclick="orderViaWA()" class="py-3.5 rounded-xl bg-green-500 text-white font-black text-[10px] uppercase italic flex items-center justify-center gap-2 hover:bg-green-600 shadow-lg shadow-green-500/20"><i data-lucide="send" class="w-3 h-3"></i> Pesan WA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCROLL TOP -->
+    <button id="btn-scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-6 right-6 p-4 bg-[var(--brand-secondary)] text-white rounded-2xl shadow-xl z-40 transition-all hover:scale-105 hidden"><i data-lucide="chevron-up" class="w-5 h-5"></i></button>
+
+    <script>
+        /* Tautan CSV Google Sheet - SILAKAN GANTI DENGAN LINK PUBLIKASI ANDA */
+        const BRANDING_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOYY28haMZrDrwXrYkOBIlHEptevtiv7O8M8RkR0G_K5vZacWRJNwGM-5N3wCjDaU-9KqzywcaL8DA/pub?gid=0&single=true&output=csv';
+        const DATA_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOYY28haMZrDrwXrYkOBIlHEptevtiv7O8M8RkR0G_K5vZacWRJNwGM-5N3wCjDaU-9KqzywcaL8DA/pub?gid=1910038505&single=true&output=csv';
+        const TESTIMONY_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTOYY28haMZrDrwXrYkOBIlHEptevtiv7O8M8RkR0G_K5vZacWRJNwGM-5N3wCjDaU-9KqzywcaL8DA/pub?gid=1790988718&single=true&output=csv';
+
+        let appData = { branding: {}, services: [], testimonials: [], cart: JSON.parse(sessionStorage.getItem('cart') || '[]'), filters: { platform: 'Semua', search: '', sort: 'default', page: 1 } };
+        const ITEMS_PER_PAGE = 20;
+
+        /* MAP ICON LUCIDE UNTUK SETIAP PLATFORM (Digunakan pada Card saja) */
+        const iconMap = { 'instagram': 'instagram', 'tiktok': 'music-2', 'youtube': 'youtube', 'facebook': 'facebook', 'twitter': 'twitter', 'x': 'twitter', 'spotify': 'music', 'telegram': 'send', 'threads': 'message-circle', 'soundcloud': 'cloud', 'shopee': 'shopping-bag', 'linkedin': 'linkedin', 'twitch': 'tv' };
+        const getPlatformIcon = (platform) => { const p = (platform || '').toLowerCase(); for (const key in iconMap) { if (p.includes(key)) return iconMap[key]; } return 'globe'; };
+
+        const cleanPrice = (val) => parseInt(val.toString().replace(/[^0-9]/g, '')) || 0;
+        const formatPrice = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+
+        const parseCSV = (csv) => { if(!csv) return []; const lines = csv.trim().split(/\r?\n/); const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '')); return lines.slice(1).map(line => { const values = []; let cur = "", q = false; for (let c of line) { if (c === '"') q = !q; else if (c === ',' && !q) { values.push(cur.trim()); cur = ""; } else cur += c; } values.push(cur.trim()); return headers.reduce((o, h, i) => { o[h] = (values[i] || "").replace(/^"|"$/g, ''); return o; }, {}); }); };
+
+        const fetchData = async () => {
+            try {
+                const [brandT, dataT, testT] = await Promise.all([
+                    fetch(BRANDING_CSV, {cache: "no-store"}).then(r => r.text()), 
+                    fetch(DATA_CSV, {cache: "no-store"}).then(r => r.text()), 
+                    fetch(TESTIMONY_CSV, {cache: "no-store"}).then(r => r.text())
+                ]);
+                parseCSV(brandT).forEach(it => { appData.branding[it.key] = it.value; });
+                appData.services = parseCSV(dataT);
+                appData.testimonials = parseCSV(testT);
+                renderAll();
+                setTimeout(() => { document.getElementById('loading-screen').style.opacity = '0'; setTimeout(() => document.getElementById('loading-screen').remove(), 500); }, 800);
+            } catch (e) { document.getElementById('loading-brand-name').innerText = "Gagal Memuat Data"; }
+        };
+
+        const fixDriveUrl = (url) => {
+            if (!url) return '';
+            const idMatch = url.match(/id=([^&]+)/) || url.match(/\/file\/d\/([^/]+)/);
+            return idMatch ? `https://drive.google.com/uc?id=${idMatch[1]}` : url;
+        };
+
+        const applyColors = () => {
+            const b = appData.branding; const root = document.documentElement; const isDark = document.body.classList.contains('dark');
+            // Warna Dasar
+            if (b.color_default) root.style.setProperty('--brand-primary', b.color_default);
+            if (b.color_accent) root.style.setProperty('--brand-accent', b.color_accent);
+            if (b.color_secondary) root.style.setProperty('--brand-secondary', b.color_secondary);
+            
+            // Logika Warna Tema (Kelompok key sesuai instruksi)
+            if (isDark) {
+                if (b.color_dark_bg) root.style.setProperty('--bg-color', b.color_dark_bg);
+                if (b.color_dark_surface) root.style.setProperty('--surface-color', b.color_dark_surface);
+                if (b.color_dark_text) root.style.setProperty('--text-color', b.color_dark_text);
+                if (b.color_dark_accent) root.style.setProperty('--brand-accent', b.color_dark_accent);
+            } else {
+                if (b.color_light_bg) root.style.setProperty('--bg-color', b.color_light_bg);
+                if (b.color_light_surface) root.style.setProperty('--surface-color', b.color_light_surface);
+                if (b.color_light_text) root.style.setProperty('--text-color', b.color_light_text);
+                if (b.color_light_accent) root.style.setProperty('--brand-accent', b.color_light_accent);
+            }
+        };
+
+        const renderAll = () => {
+            const b = appData.branding;
+            applyColors();
+            
+            // Branding UI
+            document.getElementById('nav-brand-name').innerText = b.brand_name || 'Zadigital';
+            document.getElementById('footer-brand-name').innerText = b.brand_name || 'Zadigital';
+            document.getElementById('footer-text-display').innerText = b.footer_text || '';
+            document.getElementById('footer-wa').innerText = b.wa_number || '';
+            document.getElementById('footer-wa-link').href = `https://wa.me/${b.wa_number}`;
+
+            // Hero Section
+            const title = b.hero_title || b.brand_name || 'Zadigital';
+            const titleEl = document.getElementById('hero-title');
+            titleEl.innerHTML = title.split(' ').join('<br>');
+            titleEl.style.fontSize = title.length > 15 ? '2.5rem' : '';
+            document.getElementById('hero-subtitle').innerText = b.hero_subtitle || '';
+
+            // Logo
+            const logoUrl = fixDriveUrl(b.logo_url);
+            if (logoUrl) { ['nav-logo', 'footer-logo', 'hero-logo'].forEach(id => { const el = document.getElementById(id); el.src = logoUrl; el.classList.remove('hidden'); }); }
+
+            // INFO & CATATAN
+            const infoSection = document.getElementById('info-section');
+            if (b.info_title || b.info_body || b.catatan) {
+                infoSection.classList.remove('hidden');
+                document.getElementById('info-title-display').innerText = b.info_title || '';
+                document.getElementById('info-body-display').innerText = b.info_body || '';
+                const catBox = document.getElementById('catatan-box');
+                if (b.catatan) { catBox.classList.remove('hidden'); document.getElementById('catatan-text-display').innerText = b.catatan; } else { catBox.classList.add('hidden'); }
+            }
+
+            // POPUP GAMBAR (Prinsip Kosong)
+            if (b.pop_up) {
+                const popup = document.getElementById('popup-promo');
+                const popupImg = document.getElementById('popup-image-display');
+                popupImg.src = fixDriveUrl(b.pop_up);
+                popup.classList.remove('hidden');
+                popup.classList.add('flex');
+            }
+
+            // BONUS SECTION
+            const bonusKeys = ['Bonus_1', 'Bonus_2', 'Bonus_3'];
+            const bonusSection = document.getElementById('bonus-section');
+            const bonusGrid = document.getElementById('bonus-grid');
+            bonusGrid.innerHTML = '';
+            let hasBonus = false;
+            bonusKeys.forEach(k => {
+                if (b[k]) {
+                    hasBonus = true;
+                    bonusGrid.innerHTML += `<img src="${fixDriveUrl(b[k])}" class="w-full h-auto rounded-xl shadow-lg border border-[var(--border-color)]">`;
+                }
+            });
+            if (hasBonus) bonusSection.classList.remove('hidden');
+
+            // Footer Sosmed (Teks Saja)
+            const footerSosmed = document.getElementById('footer-sosmed');
+            footerSosmed.innerHTML = '';
+            [['ig_url', 'INSTAGRAM'], ['tiktok_url', 'TIKTOK'], ['youtube_url', 'YOUTUBE']].forEach(([key, label]) => {
+                if (b[key]) footerSosmed.innerHTML += `<a href="${b[key]}" target="_blank" class="px-4 py-2 bg-[var(--surface-color)] rounded-lg border border-[var(--border-color)] text-[9px] font-black tracking-[0.2em] hover:bg-[var(--brand-secondary)] hover:text-white transition-all uppercase">${label}</a>`;
+            });
+
+            renderFilters(); handleFilter(); renderTestimonials(); renderCart();
+            lucide.createIcons();
+        };
+
+        const renderFilters = () => {
+            const plats = [...new Set(appData.services.map(s => s.platform))].filter(Boolean);
+            const cont = document.getElementById('platform-filters');
+            // Menghilangkan icon di filter platform
+            cont.innerHTML = `<button onclick="setPlatform('Semua')" class="px-4 py-2 rounded-lg text-[10px] font-black transition-all ${appData.filters.platform === 'Semua' ? 'bg-[var(--brand-secondary)] text-white shadow-lg' : 'bg-[var(--surface-color)] opacity-60'}">SEMUA</button>` + 
+                plats.map(p => `<button onclick="setPlatform('${p}')" class="px-4 py-2 rounded-lg text-[10px] font-black whitespace-nowrap transition-all ${appData.filters.platform === p ? 'bg-[var(--brand-secondary)] text-white shadow-lg' : 'bg-[var(--surface-color)] opacity-60'}">${p.toUpperCase()}</button>`).join('');
+        };
+
+        const setPlatform = (p) => { appData.filters.platform = p; appData.filters.page = 1; renderFilters(); handleFilter(); };
+        const handleFilter = () => {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const sort = document.getElementById('sort-select').value;
+            let filtered = appData.services.filter(s => { const mP = appData.filters.platform === 'Semua' || s.platform === appData.filters.platform; const mS = s.nama_layanan.toLowerCase().includes(search) || s.platform.toLowerCase().includes(search); return mP && mS; });
+            filtered.sort((a, b) => { if (a.badge === 'Terlaris' && b.badge !== 'Terlaris') return -1; if (a.badge !== 'Terlaris' && b.badge === 'Terlaris') return 1; const pA = cleanPrice(a.harga), pB = cleanPrice(b.harga); if (sort === 'cheap') return pA - pB; if (sort === 'expensive') return pB - pA; return 0; });
+            const start = (appData.filters.page - 1) * ITEMS_PER_PAGE;
+            renderServices(filtered.slice(start, start + ITEMS_PER_PAGE));
+            renderPagination(Math.ceil(filtered.length / ITEMS_PER_PAGE));
+        };
+
+        const renderServices = (services) => {
+            const grid = document.getElementById('services-grid');
+            if (services.length === 0) { grid.innerHTML = `<div class="col-span-full py-16 text-center opacity-30 font-black italic">TIDAK ADA DATA</div>`; return; }
+            grid.innerHTML = services.map(s => {
+                const isOut = s.stok?.toLowerCase() === 'habis';
+                const cPrice = cleanPrice(s.harga);
+                return `<div class="service-card group bg-[var(--surface-color)] border border-[var(--border-color)] rounded-xl p-5 flex flex-col shadow-sm transition-all duration-300">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-[var(--brand-accent)]/10 flex items-center justify-center text-[var(--brand-secondary)]"><i data-lucide="${getPlatformIcon(s.platform)}" class="w-5 h-5"></i></div>
+                        ${s.badge ? `<span class="px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${s.badge.includes('Terlaris') ? 'bg-orange-500' : 'bg-blue-600'} text-white shadow-lg">${s.badge}</span>` : ''}
+                    </div>
+                    <h3 class="text-lg font-black mb-1 leading-tight italic uppercase tracking-tighter">${s.nama_layanan}</h3>
+                    <div class="mb-4"><span class="text-lg font-black text-[var(--brand-secondary)]">${formatPrice(cPrice)}</span></div>
+                    <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full ${isOut ? 'bg-red-500' : 'bg-green-500 animate-pulse'}"></div><span class="text-[8px] font-black ${isOut ? 'text-red-500' : 'text-green-500'} uppercase">${s.stok || 'AKTIF'}</span></div>
+                        <button onclick="addToCart('${s.nama_layanan}', ${cPrice})" ${isOut ? 'disabled' : ''} class="flex-1 py-2 px-3 rounded-lg font-black text-[9px] bg-[var(--brand-primary)] text-white hover:scale-105 active:scale-95 transition-all disabled:opacity-20 uppercase tracking-tighter">+ KE KERANJANG</button>
+                    </div>
+                </div>`;
+            }).join('');
+            lucide.createIcons();
+        };
+
+        const renderPagination = (total) => {
+            const cont = document.getElementById('pagination');
+            if (total <= 1) { cont.innerHTML = ''; return; }
+            cont.innerHTML = Array.from({length: total}, (_, i) => i + 1).map(n => `<button onclick="setPage(${n})" class="w-10 h-10 rounded-xl font-black text-[10px] transition-all ${n === appData.filters.page ? 'bg-[var(--brand-secondary)] text-white' : 'bg-[var(--surface-color)] opacity-60'}">${n}</button>`).join('');
+        };
+        const setPage = (p) => { appData.filters.page = p; handleFilter(); document.getElementById('services-section').scrollIntoView({ behavior: 'smooth' }); };
+
+        const renderTestimonials = () => {
+            const marquee = document.getElementById('testimonial-marquee');
+            const data = appData.testimonials.length > 0 ? [...appData.testimonials, ...appData.testimonials] : [];
+            marquee.innerHTML = data.map(t => `<div class="p-6 bg-[var(--bg-color)] rounded-xl border border-[var(--border-color)] shadow-sm min-w-[300px] md:min-w-[350px]">
+                <div class="flex gap-1 mb-3">${Array(parseInt(t.bintang || 5)).fill(0).map(() => `<i data-lucide="star" class="w-3 h-3 fill-yellow-400 text-yellow-400"></i>`).join('')}</div>
+                <p class="text-xs italic mb-4 opacity-60 leading-relaxed font-bold whitespace-normal">"${t.isi}"</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--brand-secondary)] to-[var(--brand-accent)] flex items-center justify-center text-white font-black text-xs">${t.nama?.charAt(0) || '?'}</div>
+                    <div><h4 class="font-black text-[10px] uppercase">${t.nama}</h4><span class="text-[7px] opacity-40 uppercase font-black tracking-widest">${t.platform_order}</span></div>
+                </div>
+            </div>`).join('');
+            lucide.createIcons();
+        };
+
+        const addToCart = (n, p) => { const ex = appData.cart.find(i => i.name === n); if (ex) ex.qty += 1; else appData.cart.push({ name: n, price: p, qty: 1 }); saveCart(); renderCart(); toggleCart(); };
+        const updateQty = (idx, d) => { appData.cart[idx].qty += d; if (appData.cart[idx].qty < 1) appData.cart.splice(idx, 1); saveCart(); renderCart(); };
+        const clearCart = () => { appData.cart = []; saveCart(); renderCart(); };
+        const saveCart = () => sessionStorage.setItem('cart', JSON.stringify(appData.cart));
+        const toggleCart = () => document.getElementById('cart-drawer').classList.toggle('translate-x-full');
+        const scrollFilters = (amount) => { document.getElementById('platform-filters').scrollLeft += amount; };
+        const closePopup = () => { document.getElementById('popup-promo').classList.replace('flex', 'hidden'); };
+        const toggleTheme = () => { const body = document.body; body.classList.toggle('light'); body.classList.toggle('dark'); document.getElementById('theme-icon').setAttribute('data-lucide', body.classList.contains('light') ? 'moon' : 'sun'); applyColors(); lucide.createIcons(); };
+
+        const renderCart = () => {
+            const cont = document.getElementById('cart-items'), badge = document.getElementById('cart-badge'), totEl = document.getElementById('cart-total');
+            if (appData.cart.length === 0) { cont.innerHTML = `<div class="h-full flex flex-col items-center justify-center opacity-20 text-center uppercase font-black text-[8px] tracking-widest"><i data-lucide="shopping-basket" class="w-12 h-12 mb-2"></i>Kosong</div>`; badge.classList.add('hidden'); totEl.innerText = formatPrice(0); lucide.createIcons(); return; }
+            let tot = 0, count = 0;
+            cont.innerHTML = appData.cart.map((it, idx) => { tot += (it.price * it.qty); count += it.qty; return `<div class="bg-[var(--bg-color)] p-4 rounded-xl border border-[var(--border-color)] flex flex-col gap-3">
+                <div class="flex justify-between items-start"><h4 class="font-black flex-1 text-[10px] uppercase italic leading-tight">${it.name}</h4><button onclick="updateQty(${idx}, -${it.qty})" class="p-1 text-red-500/50 hover:text-red-500"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div>
+                <div class="flex justify-between items-center"><div class="flex items-center gap-3 bg-[var(--surface-color)] p-1 rounded-lg border border-white/5"><button onclick="updateQty(${idx}, -1)" class="w-6 h-6 rounded-md hover:bg-black/5 flex items-center justify-center"><i data-lucide="minus" class="w-3 h-3"></i></button><span class="w-4 text-center font-black text-[10px]">${it.qty}</span><button onclick="updateQty(${idx}, 1)" class="w-6 h-6 rounded-md hover:bg-black/5 flex items-center justify-center"><i data-lucide="plus" class="w-3 h-3"></i></button></div><span class="font-black text-[10px] text-[var(--brand-secondary)]">${formatPrice(it.price * it.qty)}</span></div>
+            </div>`; }).join('');
+            totEl.innerText = formatPrice(tot); badge.innerText = count; badge.classList.remove('hidden'); lucide.createIcons();
+        };
+
+        const orderViaWA = () => { const b = appData.branding; if (appData.cart.length === 0) return; let msg = `${b.wa_greeting || "Halo, saya mau order:"}\n\n`, tot = 0; appData.cart.forEach((it, i) => { tot += (it.price * it.qty); msg += `${i+1}. ${it.name} x${it.qty} = ${formatPrice(it.price * it.qty)}\n`; }); msg += `\nTotal: ${formatPrice(tot)}\n\nTerima kasih!`; window.open(`https://wa.me/${b.wa_number}?text=${encodeURIComponent(msg)}`, '_blank'); };
+
+        window.onload = fetchData;
+        window.onscroll = () => { const nav = document.getElementById('navbar'), btn = document.getElementById('btn-scroll-top'); if (window.scrollY > 20) nav.classList.add('py-1', 'shadow-2xl'); else nav.classList.remove('py-1', 'shadow-2xl'); if (window.scrollY > 400) btn.classList.remove('hidden'); else btn.classList.add('hidden'); };
+    </script>
+</body>
+</html>
