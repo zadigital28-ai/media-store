@@ -165,15 +165,6 @@
             z-index: 9999;
             transition: opacity 0.5s;
         }
-        .loader-brand {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            font-family: 'Syne', sans-serif;
-            background: linear-gradient(45deg, var(--color-accent), var(--color-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
         .progress-bar-container {
             width: 200px;
             height: 4px;
@@ -1167,7 +1158,6 @@
 
     <!-- Loading Screen -->
     <div id="loading-screen">
-        <div class="loader-brand" id="loader-brand-name">Zadigital</div>
         <div class="progress-bar-container">
             <div class="progress-bar" id="loader-progress"></div>
         </div>
@@ -1574,7 +1564,6 @@
             const brandName = b.brand_name ? escapeHTML(b.brand_name) : '';
             document.title = brandName || 'Toko Produk Digital';
             document.getElementById('nav-brand-name').textContent = brandName;
-            document.getElementById('loader-brand-name').textContent = brandName || 'Toko Digital';
             document.getElementById('footer-brand').textContent = brandName;
 
             if(b.seo_title) document.title = escapeHTML(b.seo_title);
