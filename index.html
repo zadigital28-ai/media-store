@@ -279,7 +279,9 @@
         }
         .cart-btn {
             position: relative;
-            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .cart-badge {
             position: absolute;
@@ -1179,7 +1181,7 @@
         <div class="container nav-content">
             <a href="#" class="logo-container">
                 <img id="nav-logo" src="" alt="Logo" class="logo-img">
-                <span id="nav-brand-name">Brand</span>
+                <span id="nav-brand-name"></span>
             </a>
             
             <!-- Navigation Menu -->
@@ -1194,7 +1196,11 @@
             <div class="nav-actions">
                 <button class="theme-toggle" id="theme-btn" aria-label="Toggle Theme">🌙</button>
                 <button class="cart-btn" id="cart-btn" aria-label="Cart">
-                    🛒
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
                     <span class="cart-badge" id="cart-count">0</span>
                 </button>
                 <!-- Hamburger Menu for Mobile/Tablet -->
@@ -1326,7 +1332,7 @@
         <div class="container">
             <div class="footer-brand-wrapper" id="footer-brand-wrapper">
                 <img src="" id="footer-logo" class="footer-logo hidden" alt="Footer Logo">
-                <h2 class="font-heading" id="footer-brand">Brand Name</h2>
+                <h2 class="font-heading" id="footer-brand"></h2>
             </div>
             <div class="social-links" id="social-links">
                 <!-- Injected via JS -->
@@ -1565,12 +1571,12 @@
         function renderBranding() {
             const b = state.branding;
             
-            if(b.brand_name) {
-                document.title = escapeHTML(b.brand_name);
-                document.getElementById('nav-brand-name').textContent = escapeHTML(b.brand_name);
-                document.getElementById('loader-brand-name').textContent = escapeHTML(b.brand_name);
-                document.getElementById('footer-brand').textContent = escapeHTML(b.brand_name);
-            }
+            const brandName = b.brand_name ? escapeHTML(b.brand_name) : '';
+            document.title = brandName || 'Toko Produk Digital';
+            document.getElementById('nav-brand-name').textContent = brandName;
+            document.getElementById('loader-brand-name').textContent = brandName || 'Toko Digital';
+            document.getElementById('footer-brand').textContent = brandName;
+
             if(b.seo_title) document.title = escapeHTML(b.seo_title);
             if(b.seo_desc) document.querySelector('meta[name="description"]').setAttribute('content', escapeHTML(b.seo_desc));
             if(b.seo_keywords) document.querySelector('meta[name="keywords"]').setAttribute('content', escapeHTML(b.seo_keywords));
